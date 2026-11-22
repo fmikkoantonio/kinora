@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { Card, Screen } from "@/components/Screen";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
@@ -28,6 +29,15 @@ async function loadProfileGender(): Promise<string | null> {
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const appVersion = Constants.expoConfig?.version ?? "Unknown";
+  const buildNumber = Platform.OS === "android"
+    ? Constants.platform?.android?.versionCode ?? Constants.expoConfig?.android?.versionCode
+    : Platform.OS === "ios"
+      ? Constants.platform?.ios?.buildNumber ?? Constants.expoConfig?.ios?.buildNumber
+      : null;
+  const versionLabel = buildNumber == null
+    ? `Kinora v${appVersion} · Development build`
+    : `Kinora v${appVersion} · ${Platform.OS === "android" ? "Android" : "iOS"} build ${buildNumber}`;
   const [gender, setGender] = useState<string | null>(null);
   const [loadingGender, setLoadingGender] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -121,6 +131,7 @@ export default function ProfileScreen() {
         <Ionicons name="log-out-outline" size={18} color="#B42318" />
         <Text style={styles.signOutText}>Sign out</Text>
       </Pressable>
+      <Text style={styles.appVersion}>{versionLabel}</Text>
       <Modal
         visible={confirmingSignOut}
         transparent
@@ -182,6 +193,7 @@ const styles = StyleSheet.create({
   infoText: { color: colors.muted, fontSize: 10, lineHeight: 15 },
   signOut: { minHeight: 48, borderRadius: 13, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: "#FEE4E2" },
   signOutText: { color: "#B42318", fontSize: 13, fontWeight: "800" },
+  appVersion: { color: colors.muted, fontSize: 10, textAlign: "center" },
   modalBackdrop: { flex: 1, justifyContent: "center", alignItems: "center", padding: 22, backgroundColor: "rgba(25,42,58,0.42)" },
   confirmCard: { width: "100%", maxWidth: 390, padding: 20, borderRadius: 20, gap: 10, backgroundColor: colors.surface, alignItems: "center" },
   confirmTitle: { color: colors.text, fontSize: 19, fontWeight: "800" },
