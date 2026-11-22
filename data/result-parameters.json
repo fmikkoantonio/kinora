@@ -1,0 +1,77 @@
+{
+  "1": [
+    { "name": "Hemoglobin", "type": "numeric" },
+    { "name": "Hematocrit", "type": "numeric" },
+    { "name": "RBC", "type": "numeric" },
+    { "name": "WBC", "type": "numeric" },
+    { "name": "Neutrophils", "type": "numeric" },
+    { "name": "Lymphocytes", "type": "numeric" },
+    { "name": "Monocytes", "type": "numeric" },
+    { "name": "Eosinophils", "type": "numeric" },
+    { "name": "Basophils", "type": "numeric" },
+    { "name": "Platelets", "type": "numeric" },
+    { "name": "MCV", "type": "numeric" },
+    { "name": "MCH", "type": "numeric" },
+    { "name": "MCHC", "type": "numeric" }
+  ],
+  "2": [
+    { "name": "Color", "type": "qualitative" },
+    { "name": "Appearance", "type": "qualitative" },
+    { "name": "Specific Gravity", "type": "numeric" },
+    { "name": "pH", "type": "numeric" },
+    { "name": "Protein", "type": "qualitative" },
+    { "name": "Glucose", "type": "qualitative" },
+    { "name": "Ketones", "type": "qualitative" },
+    { "name": "Blood", "type": "qualitative" },
+    { "name": "Leukocyte Esterase", "type": "qualitative" },
+    { "name": "Nitrite", "type": "qualitative" },
+    { "name": "RBC / HPF", "type": "numeric" },
+    { "name": "WBC / HPF", "type": "numeric" },
+    { "name": "Epithelial Cells", "type": "text" },
+    { "name": "Bacteria", "type": "qualitative" }
+  ],
+  "3": [
+    { "name": "Color", "type": "text" },
+    { "name": "Consistency", "type": "qualitative" },
+    { "name": "Mucus", "type": "qualitative" },
+    { "name": "RBC", "type": "text" },
+    { "name": "WBC", "type": "text" },
+    { "name": "Ova and parasites", "type": "longText" },
+    { "name": "Other findings", "type": "longText" }
+  ],
+  "4": [
+    { "name": "Findings", "type": "longText" },
+    { "name": "Impression", "type": "longText" },
+    { "name": "Radiologist", "type": "text" }
+  ],
+  "6": [
+    { "name": "Total Cholesterol", "type": "numeric" },
+    { "name": "HDL", "type": "numeric" },
+    { "name": "LDL", "type": "numeric" },
+    { "name": "Triglycerides", "type": "numeric" },
+    { "name": "VLDL", "type": "numeric" }
+  ],
+  "7": [
+    { "name": "Glucose result", "type": "numeric" }
+  ],
+  "8": [
+    { "name": "Creatinine", "type": "numeric" },
+    { "name": "eGFR", "type": "numeric" }
+  ],
+  "9": [
+    { "name": "Heart rate", "type": "numeric" },
+    { "name": "Rhythm", "type": "qualitative" },
+    { "name": "PR interval", "type": "numeric" },
+    { "name": "QRS duration", "type": "numeric" },
+    { "name": "QT/QTc", "type": "text" },
+    { "name": "Axis", "type": "text" },
+    { "name": "Interpretation", "type": "longText" }
+  ],
+  "18": [
+    { "name": "HbA1c percentage", "type": "numeric" },
+    { "name": "Estimated average glucose", "type": "numeric" }
+  ],
+  "19": [
+    { "name": "Glucose result", "type": "numeric" }
+  ]
+}

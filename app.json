@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Kinora",
+    "slug": "kinora",
+    "scheme": ["kinora", "momcare"],
+    "version": "1.0.0",
+    "icon": "./assets/images/kinora-icon.png",
+    "splash": {
+      "image": "./assets/images/kinora-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "bundleIdentifier": "com.fmga.momcare",
+      "icon": "./assets/images/kinora-icon.png"
+    },
+    "android": {
+      "package": "com.fmga.momcare",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/kinora-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

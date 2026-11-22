@@ -1,0 +1,70 @@
+[
+  {
+    "diagnosticId": "1",
+    "diagnosticDescription": "Complete Blood Count"
+  },
+  {
+    "diagnosticId": "13",
+    "diagnosticDescription": "Paps Smear"
+  },
+  {
+    "diagnosticId": "14",
+    "diagnosticDescription": "Oral Glucose Tolerance Test"
+  },
+  {
+    "diagnosticId": "2",
+    "diagnosticDescription": "Urinalysis"
+  },
+  {
+    "diagnosticId": "3",
+    "diagnosticDescription": "Fecalysis"
+  },
+  {
+    "diagnosticId": "4",
+    "diagnosticDescription": "Chest X-Ray"
+  },
+  {
+    "diagnosticId": "5",
+    "diagnosticDescription": "Sputum Microscopy"
+  },
+  {
+    "diagnosticId": "6",
+    "diagnosticDescription": "Lipid Profile"
+  },
+  {
+    "diagnosticId": "7",
+    "diagnosticDescription": "Fasting Blood Sugar"
+  },
+  {
+    "diagnosticId": "8",
+    "diagnosticDescription": "Creatinine"
+  },
+  {
+    "diagnosticId": "9",
+    "diagnosticDescription": "Electrocardiogram (ECG)"
+  },
+  {
+    "diagnosticId": "0",
+    "diagnosticDescription": "Not Applicable"
+  },
+  {
+    "diagnosticId": "15",
+    "diagnosticDescription": "Fecal Occult Blood"
+  },
+  {
+    "diagnosticId": "17",
+    "diagnosticDescription": "PPD Test (Tuberculosis)"
+  },
+  {
+    "diagnosticId": "18",
+    "diagnosticDescription": "HbA1c"
+  },
+  {
+    "diagnosticId": "19",
+    "diagnosticDescription": "Random Blood Sugar"
+  },
+  {
+    "diagnosticId": "99",
+    "diagnosticDescription": "Others"
+  }
+]
