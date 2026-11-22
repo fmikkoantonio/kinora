@@ -3,7 +3,7 @@
     "name": "Kinora",
     "slug": "kinora",
     "scheme": ["kinora"],
-    "version": "1.0.0",
+    "version": "1.1.0",
     "icon": "./assets/images/kinora-icon.png",
     "splash": {
       "image": "./assets/images/kinora-logo.png",
@@ -12,12 +12,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.fmga.kinora",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "icon": "./assets/images/kinora-icon.png"
     },
     "android": {
       "package": "com.fmga.kinora",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/kinora-icon.png",
         "backgroundColor": "#FFFFFF"
