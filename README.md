@@ -37,6 +37,8 @@ npx expo prebuild --platform android
 The APK is written to `android\app\build\outputs\apk\release\app-release.apk`.
 An iOS device build requires Apple signing; local iOS builds require macOS and Xcode.
 
+The installed app displays its version and platform build number at the bottom of the Profile tab. For each release, update `expo.version` and increment `expo.android.versionCode` and `expo.ios.buildNumber` in `app.json`; Android build numbers must always increase for store updates.
+
 ## Supabase
 
 The app reads `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` from the local `.env`. Never put a Supabase `service_role` key in the app.
