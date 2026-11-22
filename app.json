@@ -23,6 +23,9 @@
         "backgroundColor": "#FFFFFF"
       }
     },
+    "web": {
+      "favicon": "./assets/images/kinora-icon.png"
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
