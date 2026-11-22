@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kinora",
     "slug": "kinora",
-    "scheme": ["kinora", "momcare"],
+    "scheme": ["kinora"],
     "version": "1.0.0",
     "icon": "./assets/images/kinora-icon.png",
     "splash": {
@@ -11,11 +11,13 @@
       "backgroundColor": "#FFFFFF"
     },
     "ios": {
-      "bundleIdentifier": "com.fmga.momcare",
+      "bundleIdentifier": "com.fmga.kinora",
+      "buildNumber": "1",
       "icon": "./assets/images/kinora-icon.png"
     },
     "android": {
-      "package": "com.fmga.momcare",
+      "package": "com.fmga.kinora",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/kinora-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -24,11 +26,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "plugins": [
-      "expo-router",
-      "expo-font",
-      "expo-secure-store"
-    ],
+    "plugins": ["expo-router", "expo-font", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
     }

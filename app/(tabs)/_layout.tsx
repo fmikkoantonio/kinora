@@ -1,6 +1,7 @@
 import { StyleSheet, View, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "@/constants/theme";
 
 type TabIconName = "home-outline" | "folder-open-outline" | "time-outline" | "people-outline" | "person-circle-outline";
@@ -21,12 +22,17 @@ function tabIcon(name: TabIconName) {
 }
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs screenOptions={{
       headerShown: false,
       tabBarActiveTintColor: colors.primary,
       tabBarInactiveTintColor: "#8795A3",
-      tabBarStyle: styles.tabBar,
+      tabBarStyle: [
+        styles.tabBar,
+        { height: 72 + insets.bottom, paddingBottom: 8 + insets.bottom },
+      ],
       tabBarLabelStyle: styles.tabLabel,
     }}>
       <Tabs.Screen name="index" options={{ title: "Home", tabBarIcon: tabIcon("home-outline") }} />
