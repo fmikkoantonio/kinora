@@ -6,17 +6,20 @@ import { Card, Screen } from "@/components/Screen";
 import { DropdownField, DropdownOption } from "@/components/DropdownField";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
 import { colors } from "@/constants/theme";
-import { useAuth } from "@/context/AuthContext";
+import { getUserDisplayName, useAuth } from "@/context/AuthContext";
 import { FamilyDirectoryGroup, useFamilyDirectory } from "@/context/FamilyDirectoryContext";
 import { supabase } from "@/lib/supabase";
 import { getViewerRelativeRelationship } from "@/lib/familyMemberOptions";
+import { FamilyGender, getMemberRelationshipLabel } from "@/lib/familyRelationships";
 
 type IncomingInvitation = {
   id?: string;
   invitation_id?: string;
   group_id?: string;
   group_name?: string;
+  inviter_id?: string;
   inviter_name?: string;
+  relationship?: string;
   inviter_relationship_label?: string;
 };
 
@@ -54,12 +57,14 @@ export default function FamilyScreen() {
   const appliedRequestedGroupId = useRef<string | null>(null);
   const [incoming, setIncoming] = useState<IncomingInvitation[]>([]);
   const [sent, setSent] = useState<SentInvitation[]>([]);
+  const [profileGender, setProfileGender] = useState<FamilyGender>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [relationship, setRelationship] = useState<string | null>(null);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
   const [hasLoadedInvitations, setHasLoadedInvitations] = useState(false);
   const [refreshingAll, setRefreshingAll] = useState(false);
   const [sending, setSending] = useState(false);
+  const [membershipActionId, setMembershipActionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -79,8 +84,42 @@ export default function FamilyScreen() {
   const groupOptions = useMemo<DropdownOption[]>(() => groups.map((group) => ({
     label: group.group_name,
     value: group.group_id,
-    description: group.role === "owner" ? "Owner" : group.relationship,
-  })), [groups]);
+    description: group.role === "owner" ? "Owner" : getMemberRelationshipLabel(group.relationship, profileGender),
+  })), [groups, profileGender]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadGender() {
+      if (!supabase || !user) {
+        setProfileGender(null);
+        return;
+      }
+      try {
+        const { data, error: genderError } = await supabase.rpc("get_my_profile_gender");
+        if (genderError) throw genderError;
+        if (!active) return;
+        const value = typeof data === "string"
+          ? data
+          : data && typeof data === "object" && "gender" in data && typeof data.gender === "string"
+            ? data.gender
+            : null;
+        setProfileGender(
+          value === "male" || value === "female" || value === "non_binary" || value === "prefer_not_to_say"
+            ? value
+            : null,
+        );
+      } catch (genderError) {
+        if (active) {
+          Alert.alert(
+            "Could not load gender preference",
+            genderError instanceof Error ? genderError.message : "Please try again.",
+          );
+        }
+      }
+    }
+    void loadGender();
+    return () => { active = false; };
+  }, [user?.id]);
 
   async function loadInvitations(group: FamilyDirectoryGroup | null) {
     if (!supabase || !user) {
@@ -140,7 +179,7 @@ export default function FamilyScreen() {
   }
 
   async function sendInvitation() {
-    if (!supabase || !selectedGroup || selectedGroup.role !== "owner") return;
+    if (!supabase || !user || !selectedGroup || selectedGroup.role !== "owner") return;
     const email = inviteEmail.trim().toLowerCase();
     if (!email || !email.includes("@")) {
       setError("Enter a valid email address.");
@@ -158,13 +197,29 @@ export default function FamilyScreen() {
     setSending(true);
     setError(null);
     try {
-      const { error: inviteError } = await supabase.functions.invoke("family-invite", {
-        body: {
+      const { data: existing, error: existingError } = await supabase
+        .from("family_group_invitations")
+        .select("id")
+        .eq("group_id", selectedGroup.group_id)
+        .eq("invitee_email", email)
+        .eq("status", "pending")
+        .limit(1);
+      if (existingError) throw existingError;
+      if ((existing ?? []).length) {
+        setError("An invitation is already pending for this email.");
+        return;
+      }
+
+      const { error: inviteError } = await supabase
+        .from("family_group_invitations")
+        .insert({
           group_id: selectedGroup.group_id,
+          inviter_id: user.id,
           invitee_email: email,
           relationship,
-        },
-      });
+          inviter_name: getUserDisplayName(user),
+          status: "pending",
+        });
       if (inviteError) throw inviteError;
       setInviteEmail("");
       setRelationship(null);
@@ -193,6 +248,69 @@ export default function FamilyScreen() {
       return;
     }
     await refreshAll();
+  }
+
+  async function removeMember(memberId: string, memberName: string) {
+    if (!supabase || !selectedGroup || selectedGroup.role !== "owner") return;
+    setMembershipActionId(memberId);
+    setError(null);
+    try {
+      const { error: removeError } = await supabase.rpc("remove_family_group_member", {
+        target_group_id: selectedGroup.group_id,
+        target_member_id: memberId,
+      });
+      if (removeError) throw removeError;
+      await refreshAll();
+      Alert.alert("Member removed", `${memberName} was removed from ${selectedGroup.group_name}.`);
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Could not remove the family member.");
+    } finally {
+      setMembershipActionId(null);
+    }
+  }
+
+  function confirmRemoveMember(memberId: string, memberName: string) {
+    if (!selectedGroup) return;
+    Alert.alert(
+      "Remove family member?",
+      `${memberName} will lose access to ${selectedGroup.group_name} and its shared records.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Remove", style: "destructive", onPress: () => void removeMember(memberId, memberName) },
+      ],
+    );
+  }
+
+  async function leaveGroup() {
+    if (!supabase || !selectedGroup || selectedGroup.role === "owner") return;
+    setMembershipActionId(selectedGroup.group_id);
+    setError(null);
+    try {
+      const { error: leaveError } = await supabase.rpc("leave_family_group", {
+        target_group_id: selectedGroup.group_id,
+      });
+      if (leaveError) throw leaveError;
+      await directory.refresh();
+      const remainingGroup = groups.find((group) => group.group_id !== selectedGroup.group_id);
+      setSelectedGroupId(remainingGroup?.group_id ?? null);
+      Alert.alert("Left family group", `You left ${selectedGroup.group_name}.`);
+    } catch (leaveError) {
+      setError(leaveError instanceof Error ? leaveError.message : "Could not leave the family group.");
+    } finally {
+      setMembershipActionId(null);
+    }
+  }
+
+  function confirmLeaveGroup() {
+    if (!selectedGroup) return;
+    Alert.alert(
+      "Leave family group?",
+      `You will lose access to ${selectedGroup.group_name} and its shared records.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Leave", style: "destructive", onPress: () => void leaveGroup() },
+      ],
+    );
   }
 
   function revokeInvitation(invitation: SentInvitation) {
@@ -257,9 +375,38 @@ export default function FamilyScreen() {
                 <Text style={styles.memberName}>{member.member_id === user?.id ? `${member.full_name} (You)` : member.full_name}</Text>
                 <Text style={styles.memberRelationship}>{getViewerRelativeRelationship(selectedGroup, member, user?.id)}</Text>
               </View>
-              <Text style={styles.roleTag}>{member.role === "owner" ? "Owner" : "Member"}</Text>
+              {selectedGroup.role === "owner" && member.member_id !== user?.id ? (
+                <Pressable
+                  onPress={() => confirmRemoveMember(member.member_id, member.full_name)}
+                  disabled={membershipActionId === member.member_id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${member.full_name}`}
+                  style={[styles.removeButton, membershipActionId === member.member_id && styles.disabled]}
+                >
+                  <Text style={styles.removeButtonText}>{membershipActionId === member.member_id ? "Removing…" : "Remove"}</Text>
+                </Pressable>
+              ) : (
+                <Text style={styles.roleTag}>{member.role === "owner" ? "Owner" : "Member"}</Text>
+              )}
             </View>
           ))}
+        </Card>
+      ) : null}
+
+      {selectedGroup?.role === "member" ? (
+        <Card style={styles.leaveCard}>
+          <View style={styles.leaveCopy}>
+            <Text style={styles.leaveTitle}>Leave this family group</Text>
+            <Text style={styles.helper}>You will lose access to the group and its shared records.</Text>
+          </View>
+          <Pressable
+            onPress={confirmLeaveGroup}
+            disabled={membershipActionId === selectedGroup.group_id}
+            accessibilityRole="button"
+            style={[styles.leaveButton, membershipActionId === selectedGroup.group_id && styles.disabled]}
+          >
+            <Text style={styles.leaveButtonText}>{membershipActionId === selectedGroup.group_id ? "Leaving…" : "Leave"}</Text>
+          </Pressable>
         </Card>
       ) : null}
 
@@ -297,7 +444,12 @@ export default function FamilyScreen() {
             return (
               <Card key={id} style={styles.invitationCard}>
                 <Text style={styles.invitationTitle}>{invitation.group_name ?? "Family group invitation"}</Text>
-                <Text style={styles.helper}>{invitation.inviter_name ?? "A family member"} invited you as {invitation.inviter_relationship_label ?? "a family member"}.</Text>
+                <Text style={styles.helper}>
+                  {invitation.inviter_name ?? "A family member"} invited you
+                  {invitation.relationship
+                    ? ` as ${getMemberRelationshipLabel(invitation.relationship, profileGender)}`
+                    : " to join their family"}.
+                </Text>
                 <View style={styles.invitationActions}>
                   <Pressable onPress={() => void respondToInvitation(invitation, "decline")} style={styles.declineButton}><Text style={styles.declineText}>Decline</Text></Pressable>
                   <Pressable onPress={() => void respondToInvitation(invitation, "accept")} style={styles.acceptButton}><Text style={styles.acceptText}>Accept</Text></Pressable>
@@ -435,6 +587,13 @@ const styles = StyleSheet.create({
   memberName: { color: colors.text, fontSize: 11, fontWeight: "800" },
   memberRelationship: { color: colors.muted, fontSize: 10 },
   roleTag: { color: colors.primary, fontSize: 9, fontWeight: "800", backgroundColor: colors.primaryLight, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 9 },
+  removeButton: { minHeight: 31, paddingHorizontal: 9, alignItems: "center", justifyContent: "center", borderRadius: 9, backgroundColor: "#FDECEC" },
+  removeButtonText: { color: "#B42318", fontSize: 9, fontWeight: "800" },
+  leaveCard: { flexDirection: "row", alignItems: "center", gap: 12 },
+  leaveCopy: { flex: 1, gap: 4 },
+  leaveTitle: { color: colors.text, fontSize: 11, fontWeight: "800" },
+  leaveButton: { minHeight: 38, paddingHorizontal: 14, alignItems: "center", justifyContent: "center", borderRadius: 11, backgroundColor: "#B42318" },
+  leaveButtonText: { color: "#fff", fontSize: 11, fontWeight: "800" },
   inviteCard: { gap: 10 },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   helper: { color: colors.muted, fontSize: 10, lineHeight: 15 },
